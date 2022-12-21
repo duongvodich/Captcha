@@ -1,0 +1,145 @@
+Nhấp vàoCAPTCHA
+Bộ công cụ bỏ qua antibot mà bạn cần
+
+Quét web là một khu rừng đầy hệ thống antibot rắn độc. ZenRows với tư cách là Indiana Jones của bạn sẽ giết tất cả. Từ các proxy xoay vòng cho đến các thử thách JS, API của chúng tôi thực hiện mọi thứ cho bạn trong một lệnh gọi API duy nhất
+
+Đối với những người học tốt hơn với video hướng dẫn, bạn có thể tham khảo liên kết youtube của tôi tại đây. https. //www. youtube. com/watch?v=Fdu81T9GgMA
+Tại sao tôi ghét Recaptcha
+
+Recaptcha là một rào cản lớn đối với bất kỳ kỹ sư tự động hóa nào. Nó ngăn bot của chúng tôi quét web và chặn phần mềm tự động hóa của chúng tôi đặt vé buổi hòa nhạc yêu thích của chúng tôi. Điều này được thực hiện bằng cách yêu cầu bot của chúng tôi giải các câu đố “phức tạp” mà chỉ con người mới hiểu được. Mặc dù bot có thể chọn giải quyết thử thách nhận dạng hình ảnh hoặc âm thanh, nhưng cả hai đều có thử thách như nhau. Một cách khác để giải quyết vấn đề này là sử dụng API Recaptcha Solver từ các công ty như 2Captcha, nơi họ thuê con người để giải ReCaptcha cho bạn. Chi phí dịch vụ của họ 0. 0025USD mỗi thử thách
+Sử dụng AI để giải Recaptcha
+
+Với sự tiến bộ của công nghệ AI và Machine learning, chúng ta có những công nghệ tuyệt vời như Trợ lý Google, xe tự lái Telsa và Deep Mind Alpha Go - AI đã đánh bại nhà vô địch thế giới năm 2016. Vì vậy, câu hỏi đặt ra là chúng ta có thể sử dụng các công nghệ này để giải Recaptcha tự động cho chúng ta không?
+Hiểu công nghệ AI
+
+Như tôi đã đề cập trước đây, có hai cách để giải quyết thách thức Recaptcha (1) Nhận dạng hình ảnh và (2) Nhận dạng âm thanh
+
+(1) Thử thách nhận dạng hình ảnh — Thử thách này yêu cầu người dùng xác định các đối tượng trong khung hình 3 x 3. Để giải quyết vấn đề này, có vẻ như là một nhiệm vụ đơn giản đối với AI vì chúng ta có nhiều thuật toán phân loại hình ảnh như GoogLeNet, ResNet và MobileNet có thể được đào tạo để phân loại hàng nghìn đối tượng. Vì vậy, nó không phải là một vấn đề để "chọn tất cả các hình ảnh với một chiếc xe đạp" phải không?
+
+Có, bởi vì thuật toán đơn giản để phân loại các đối tượng trong một khung duy nhất, như thể hiện trong hình bên dưới
+Xác định đối tượng “xe đạp” trong ảnh
+
+Không, vì thuật toán không đủ mạnh để xác định đối tượng khi nó được chia thành nhiều khung, như thể hiện trong hình bên dưới
+Thuật toán phân loại hình ảnh đấu tranh để xác định vị trí chiếc xe
+
+(2) Thử thách nhận dạng âm thanh — Thử thách này yêu cầu người dùng nghe một đoạn âm thanh và giải mã “lời nói của con người” từ đoạn âm thanh đó. Sử dụng AI để phát hiện giọng nói của con người là một công nghệ rất trưởng thành, trên thực tế, nó đã được tích hợp vào Siri, Google Assistant và Bixby để hiểu lệnh của người dùng. Vậy chúng ta có thể sử dụng phương pháp này để giải Recaptcha không?
+
+Đây là phương pháp được ưa thích hơn vì nhận dạng âm thanh đơn giản hơn nhiều so với nhận dạng hình ảnh, mang lại thời gian và tài nguyên tính toán thấp hơn
+Thuật toán bỏ qua Recaptcha
+
+Đối với hướng dẫn này, chúng tôi sẽ bỏ qua trang web Recaptcha do Google cung cấp. https. //www. Google. com/recaptcha/api2/demo
+
+Nhập các thư viện sau
+
+#system libraries
+import os
+import random
+import time#selenium libraries
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException   
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import UnexpectedAlertPresentException
+from selenium.webdriver.chrome.options import Options#recaptcha libraries
+import speech_recognition as sr
+import ffmpy
+import requests
+import urllib
+import pydub
+
+Bước 1. Truy cập trang web Recaptcha
+
+def delay ():
+    time.sleep(random.randint(2,3))try:
+    #create chrome driver
+    driver = webdriver.Chrome(os.getcwd()+"\\webdriver\\chromedriver.exe") 
+    delay()
+    #go to website
+    driver.get("https://www.google.com/recaptcha/api2/demo")
+    
+except:
+    print("[-] Please update the chromedriver.exe")
+
+Bước 2. Tìm khung Recaptcha và nhấp vào thử thách âm thanh
+
+#switch to recaptcha frame
+frames=driver.find_elements_by_tag_name("iframe")
+driver.switch_to.frame(frames[0]);
+delay()#click on checkbox to activate recaptcha
+driver.find_element_by_class_name("recaptcha-checkbox-border").click()#switch to recaptcha audio control frame
+driver.switch_to.default_content()
+frames=driver.find_element_by_xpath("/html/body/div[2]/div[4]").find_elements_by_tag_name("iframe")
+driver.switch_to.frame(frames[0])
+delay()#click on audio challenge
+driver.find_element_by_id("recaptcha-audio-button").click()#switch to recaptcha audio challenge frame
+driver.switch_to.default_content()
+frames= driver.find_elements_by_tag_name("iframe")
+driver.switch_to.frame(frames[-1])
+delay()#click on the play button
+driver.find_element_by_xpath("/html/body/div/div/div[3]/div/button").click()
+
+Bước 3. Tải xuống tệp MP3 thử thách âm thanh
+
+#get the mp3 audio file
+src = driver.find_element_by_id("audio-source").get_attribute("src")
+print("[INFO] Audio src: %s"%src)
+#download the mp3 audio file from the source
+urllib.request.urlretrieve(src, os.getcwd()+"\\sample.mp3")
+
+Bước 4. Chuyển đổi từ định dạng MP3 sang WAV
+
+sound = pydub.AudioSegment.from_mp3(os.getcwd()+"\\sample.mp3")
+sound.export(os.getcwd()+"\\sample.wav", format="wav")
+sample_audio = sr.AudioFile(os.getcwd()+"\\sample.wav")
+
+Bước 5. Sử dụng Google speech to text API để giải mã thách thức âm thanh
+
+#translate audio to text with google voice recognition
+key=r.recognize_google(audio)
+print("[INFO] Recaptcha Passcode: %s"%key)
+
+Bước 6. Điền mật khẩu Recaptcha và nhấn xác minh
+
+#key in results and submit
+driver.find_element_by_id("audio-response").send_keys(key.lower())
+driver.find_element_by_id("audio-response").send_keys(Keys.ENTER)
+driver.switch_to.default_content()
+delay()
+driver.find_element_by_id("recaptcha-demo-submit").click()
+delay()
+
+Chúc mừng bạn đã vượt qua Recaptcha của Google thành công
+
+    Nếu bạn không thể chạy mã được đề cập ở trên, bạn có thể làm theo hướng dẫn trên youtube của tôi để được hướng dẫn sâu hơn
+
+Liên kết Github. https. //github. com/ohyicong/recaptcha_v2_solver
+
+Các bài viết thú vị khác
+
+    Làm cách nào để hack mật khẩu Chrome bằng Python?
+    Làm cách nào để hack mật khẩu Firefox bằng Python?
+
+từ chối trách nhiệm
+
+Tôi đang chia sẻ kiến ​​thức này để nâng cao nhận thức về lỗ hổng này và chứng minh lỗ hổng này có thể bị khai thác dễ dàng như thế nào. Bạn không nên sử dụng công cụ này trên các trang web trái phép. Chúc mừng
+Có cách nào để bỏ qua CAPTCHA không?
+Sử dụng VPN . Để có kết quả tốt nhất, hãy chọn một dịch vụ VPN nổi tiếng thay vì một VPN miễn phí sẽ đi kèm với các vấn đề riêng của nó. VPN tốt ngụy trang lưu lượng truy cập của bạn, bảo vệ chi tiết thiết bị của bạn và không ghi lại nhật ký.
+Python giải mã CAPTCHA như thế nào?
+Làm cách nào để sửa hình ảnh xác thực tự động trong Python? .
+đặt thời gian chờ và đặt tần suất bỏ phiếu ít hơn (không bao giờ hiệu quả với tôi)
+sử dụng các mô hình học máy (một phương pháp sử dụng tài nguyên và tốn kém)
+sử dụng các tùy chọn chuyển giọng nói thành văn bản hoặc chuyển văn bản thành giọng nói (dễ nhưng không phải lúc nào cũng khả dụng)
+sử dụng một số dịch vụ giải captcha (tôi thấy đó là một lựa chọn tốt nhất
+Làm cách nào để bẻ khóa mã CAPTCHA?
+Các phương pháp phổ biến để phá CAPTCHA . Chúng ta có thể đào tạo các mô hình mạng nơ-ron tích chập sâu để tìm các chữ cái và chữ số trong hình ảnh CAPTCHA. Using computer vision, convolutional neural network, and python frameworks and libraries like Keras, tensorflow. We can train deep convolutional neural net models to find the letters and digits in the CAPTCHA image.
+Làm cách nào để vượt qua CAPTCHA V3?
+Để vượt qua recaptcha v3, trước tiên bạn phải tìm URL liên kết. .
+Mở phần tử kiểm tra trên trình duyệt của bạn
+Truy cập trang web có reCaptcha V3 (không phải V2 vô hình)
+Trong tab Mạng, bạn sẽ thấy nhiều yêu cầu
+Nhập neo trong bộ lọc trường văn bản để ẩn các yêu cầu không cần thiết
